@@ -16,7 +16,8 @@ static Metadata M = Metadata()
 static AssetLoader loader;
 static AssetConfiguration<1> assetConfig;
 
-Controller controller = Controller();
+Model model = Model();
+Controller controller = Controller(&model);
 
 void onDisconnect(void *x, unsigned int id)
 {
@@ -53,10 +54,6 @@ void main()
     Events::cubeTouch.set(&onTouch);
     Events::neighborAdd.set(&onNeighbourAdd);
     Events::neighborRemove.set(&onNeighbourRemove);
-
-    Model model = Model();
-
-    controller = Controller(&model);
 
     TimeStep ts;
 	while(1)
