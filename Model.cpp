@@ -33,7 +33,7 @@ void Model::updateMove(TimeDelta delta)
 
 void Model::userMove(int direction)
 {
-	LOG("direction = %d\n",direction);
+	//LOG("direction = %d\n",direction);
 	Int2 attPosition;
 	switch(direction)
 	{

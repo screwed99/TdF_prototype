@@ -20,7 +20,10 @@ View::View(Model* model, CubeID cCube, CubeID cycCube, CubeID aCube)
 	Int2 currPosition = myModel->getPosition();
 
 	gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
-	redrawRoad(centreCube, currPosition);
+
+	Int2 currTopLeft = currPosition - vec(56,56);
+
+	redrawRoad(centreCube, currPosition, currTopLeft);
 }
 
 View::View()
@@ -34,12 +37,11 @@ void View::roadNeighbourAdd(unsigned int cube0Id, unsigned int side0,
 	//LOG("alreadyUpdated[cube0Id] = %d, alreadyUpdated[cube1Id] = %d\n",alreadyUpdated[cube0Id],alreadyUpdated[cube1Id]);
 	if(alreadyUpdated[cube0Id] && !alreadyUpdated[cube1Id])
 	{
-		Neighborhood roadOldN = Neighborhood(cube0Id);
-		Neighborhood roadNewN = Neighborhood(cube1Id);
+		Neighborhood neighbourhood = Neighborhood(cube0Id);
 
-		gVideo[cube1Id].orientTo(roadNewN, gVideo[cube0Id], roadOldN);
+		gVideo[cube1Id].orientTo(gVideo[cube0Id]);
 
-		switch(side0)
+		switch(gVideo[cube0Id].physicalToVirtual(neighbourhood).sideOf(cube1Id))
 		{
 			case(TOP) :
 			{
@@ -69,12 +71,11 @@ void View::roadNeighbourAdd(unsigned int cube0Id, unsigned int side0,
 	}
 	else if(!alreadyUpdated[cube0Id] && alreadyUpdated[cube1Id])
 	{
-		Neighborhood roadOldN = Neighborhood(cube1Id);
-		Neighborhood roadNewN = Neighborhood(cube0Id);
+		Neighborhood neighbourhood = Neighborhood(cube1Id);
 
-		gVideo[cube0Id].orientTo(roadNewN, gVideo[cube1Id], roadOldN);
+		gVideo[cube0Id].orientTo(gVideo[cube1Id]);
 
-		switch(side1)
+		switch(gVideo[cube1Id].physicalToVirtual(neighbourhood).sideOf(cube0Id))
 		{
 			case(TOP) :
 			{
@@ -111,7 +112,7 @@ void View::roadNeighbourRemove(unsigned int cube0Id, unsigned int side0,
 	if(alreadyUpdated[cube0Id] && alreadyUpdated[cube1Id])
 	{
 		Int2 currPosition = myModel->getPosition();
-		redrawRoad(centreCube, currPosition);
+		redrawRoad(centreCube, currPosition, topLeftRoadCubes[centreCube]);
 	}
 }
 
@@ -177,15 +178,15 @@ void View::cyclistActionNeighbourRemove(unsigned int actionSide)
 
 void View::cyclistRoadNeighbourAdd(unsigned int roadID, unsigned int roadSide, unsigned int cyclistSide)
 {
+	gVideo[centreCube].bg1.eraseMask();
 	centreCube = roadID;
+	gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
 
-	Neighborhood roadN = Neighborhood(roadID);
-	Neighborhood cyclistN = Neighborhood((unsigned int) cyclistCube);
-
-	gVideo[roadID].orientTo(roadN, gVideo[cyclistCube], cyclistN);
+	gVideo[roadID].orientTo(gVideo[cyclistCube]);
 
 	Int2 currPosition = myModel->getPosition();
-	redrawRoad(centreCube, currPosition);
+	Int2 currTopLeft = currPosition - vec(56,56);
+	redrawRoad(centreCube, currPosition, currTopLeft);
 }
 
 void View::setActionCube(CubeID cube)
@@ -201,6 +202,7 @@ void View::setCyclistCube(CubeID cube)
 void View::updateCyclist()
 {
 	Int2 currPosition = myModel->getPosition();
+	Int2 currTopLeft = currPosition - vec(56,56);
 
 	if(topLeftRoadCubes[centreCube].x > currPosition.x + 12)
 	{
@@ -211,11 +213,11 @@ void View::updateCyclist()
 			gVideo[centreCube].bg1.eraseMask();
 			centreCube = neighbour;
 			gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
-			updateCyclist();
+			//updateCyclist();
 		}
 		else
 		{
-			redrawRoad(centreCube, currPosition);
+			redrawRoad(centreCube, currPosition, currTopLeft);
 		}
 	}
 	else if(topLeftRoadCubes[centreCube].x + 128 < currPosition.x + 12)
@@ -227,11 +229,11 @@ void View::updateCyclist()
 			gVideo[centreCube].bg1.eraseMask();
 			centreCube = neighbour;
 			gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
-			updateCyclist();
+			//updateCyclist();
 		}
 		else
 		{
-			redrawRoad(centreCube, currPosition);
+			redrawRoad(centreCube, currPosition, currTopLeft);
 		}
 	}
 	else if(topLeftRoadCubes[centreCube].y > currPosition.y + 12)
@@ -243,32 +245,27 @@ void View::updateCyclist()
 			gVideo[centreCube].bg1.eraseMask();
 			centreCube = neighbour;
 			gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
-			updateCyclist();
-		}
-		else
-		{
-			redrawRoad(centreCube, currPosition);
-		}
-	}
-	else if(topLeftRoadCubes[centreCube].y + 128 < currPosition.y + 12)
-	{
-		LOG("Going into cube below, topLeft = %d, currPosition.y = %d\n"
-			, topLeftRoadCubes[centreCube].y, currPosition.y);
-		Neighborhood neighbourhood = Neighborhood(centreCube);
-		CubeID neighbour = neighbourhood.cubeAt(BOTTOM);
-		if(neighbour.isDefined())
-		{
-			LOG("Erasing mask\n");
-			gVideo[centreCube].bg1.eraseMask();
-			centreCube = neighbour;
-			gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
-			LOG("New centreCube has topLeft = %d\n", topLeftRoadCubes[centreCube].y);
-			LOG("Going to update cyclist\n");
 			//updateCyclist();
 		}
 		else
 		{
-			redrawRoad(centreCube, currPosition);
+			redrawRoad(centreCube, currPosition, currTopLeft);
+		}
+	}
+	else if(topLeftRoadCubes[centreCube].y + 128 < currPosition.y + 12)
+	{
+		Neighborhood neighbourhood = Neighborhood(centreCube);
+		CubeID neighbour = neighbourhood.cubeAt(BOTTOM);
+		if(neighbour.isDefined())
+		{
+			gVideo[centreCube].bg1.eraseMask();
+			centreCube = neighbour;
+			gVideo[centreCube].bg1.setMask(BG1Mask::filled(vec(7,7),vec(3,3)));
+			//updateCyclist();
+		}
+		else
+		{
+			redrawRoad(centreCube, currPosition, currTopLeft);
 		}
 	}
 	else
@@ -277,7 +274,7 @@ void View::updateCyclist()
 	}
 }
 
-void View::redrawRoad(unsigned int roadID, Int2 currPosition)
+void View::redrawRoad(unsigned int roadID, Int2 currPosition, Int2 currTopLeft)
 {
 	for(int i=0; i < CUBE_ALLOCATION; ++i)
 	{
@@ -296,9 +293,9 @@ void View::redrawRoad(unsigned int roadID, Int2 currPosition)
 
 	alreadyUpdated[roadID] = true;
 
-	Int2 topLeftImage = currPosition - vec(56,56);
+	
 
-	findNewTopLefts(roadID, topLeftImage);
+	findNewTopLefts(roadID, currTopLeft);
 
 	drawCyclist(currPosition);
 }
@@ -315,6 +312,7 @@ void View::drawCyclist(Int2 position)
 
 void View::drawSingleRoadCube(unsigned int roadID)
 {
+	//LOG("Drawing cube %d, topLeft = (%d,%d)\n",roadID, topLeftRoadCubes[roadID].x, topLeftRoadCubes[roadID].y);
 	Int2 bottomRightDraw = vec(128,128);
 	if(topLeftRoadCubes[roadID].x + bottomRightDraw.x > myModel->getRoadImageWidth())
 	{
@@ -335,6 +333,7 @@ void View::drawSingleRoadCube(unsigned int roadID)
 		topLeftDraw.y = -topLeftRoadCubes[roadID].y;
 	}
 
+	//LOG("topLeftDraw = (%d,%d), bottomRightDraw = (%d,%d)\n",topLeftDraw.x, topLeftDraw.y, bottomRightDraw.x, bottomRightDraw.y);
 	Int2 imageSize = bottomRightDraw - topLeftDraw;
 
 	imageSize.x = (imageSize.x / 8) + 2;
@@ -344,7 +343,9 @@ void View::drawSingleRoadCube(unsigned int roadID)
 	if(topLeftRoadCubes[roadID].x + bottomRightDraw.x > 0 && topLeftRoadCubes[roadID].y + bottomRightDraw.y > 0)
 	{
 		gVideo[roadID].bg0.image(vec(topLeftDraw.x / 8,topLeftDraw.y / 8),
-			imageSize, RoadView, vec(topLeftRoadCubes[roadID].x / 8,topLeftRoadCubes[roadID].y / 8));
+			imageSize, RoadView,
+			vec((topLeftRoadCubes[roadID].x / 8) + (topLeftDraw.x / 8),
+				(topLeftRoadCubes[roadID].y / 8) + (topLeftDraw.y / 8)));
 
 		int xPan = topLeftRoadCubes[roadID].x % 8;
 		int yPan = topLeftRoadCubes[roadID].y % 8;
@@ -361,35 +362,31 @@ void View::findNewTopLefts(unsigned int roadID, Int2 topLeftImage)
 
 	Neighborhood neighbourhood = Neighborhood(roadID);
 
-	CubeID neighbour = neighbourhood.cubeAt(TOP);
+	CubeID neighbour = gVideo[roadID].physicalToVirtual(neighbourhood).cubeAt(TOP);
 	if(neighbour.isDefined() && !alreadyUpdated[(unsigned int) neighbour])
 	{
-		Neighborhood thisN = Neighborhood((unsigned int) neighbour);
-		gVideo[(unsigned int) neighbour].orientTo(thisN, gVideo[roadID], neighbourhood);
+		gVideo[(unsigned int) neighbour].orientTo(gVideo[roadID]);
 		alreadyUpdated[(unsigned int) neighbour] = true;
 		findNewTopLefts((unsigned int) neighbour, topLeftRoadCubes[roadID] + vec(0,-128));
 	}
-	neighbour = neighbourhood.cubeAt(BOTTOM);
+	neighbour = gVideo[roadID].physicalToVirtual(neighbourhood).cubeAt(BOTTOM);
 	if(neighbour.isDefined() && !alreadyUpdated[(unsigned int) neighbour])
 	{
-		Neighborhood thisN = Neighborhood((unsigned int) neighbour);
-		gVideo[(unsigned int) neighbour].orientTo(thisN, gVideo[roadID], neighbourhood);
+		gVideo[(unsigned int) neighbour].orientTo(gVideo[roadID]);
 		alreadyUpdated[(unsigned int) neighbour] = true;
 		findNewTopLefts((unsigned int) neighbour, topLeftRoadCubes[roadID] + vec(0,128));
 	}
-	neighbour = neighbourhood.cubeAt(LEFT);
+	neighbour = gVideo[roadID].physicalToVirtual(neighbourhood).cubeAt(LEFT);
 	if(neighbour.isDefined() && !alreadyUpdated[(unsigned int) neighbour])
 	{
-		Neighborhood thisN = Neighborhood((unsigned int) neighbour);
-		gVideo[(unsigned int) neighbour].orientTo(thisN, gVideo[roadID], neighbourhood);
+		gVideo[(unsigned int) neighbour].orientTo(gVideo[roadID]);
 		alreadyUpdated[(unsigned int) neighbour] = true;
 		findNewTopLefts((unsigned int) neighbour, topLeftRoadCubes[roadID] + vec(-128,0));
 	}
-	neighbour = neighbourhood.cubeAt(RIGHT);
+	neighbour = gVideo[roadID].physicalToVirtual(neighbourhood).cubeAt(RIGHT);
 	if(neighbour.isDefined() && !alreadyUpdated[(unsigned int) neighbour])
 	{
-		Neighborhood thisN = Neighborhood((unsigned int) neighbour);
-		gVideo[(unsigned int) neighbour].orientTo(thisN, gVideo[roadID], neighbourhood);
+		gVideo[(unsigned int) neighbour].orientTo(gVideo[roadID]);
 		alreadyUpdated[(unsigned int) neighbour] = true;
 		findNewTopLefts((unsigned int) neighbour, topLeftRoadCubes[roadID] + vec(128,0));
 	}
