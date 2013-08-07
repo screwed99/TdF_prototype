@@ -9,9 +9,9 @@
 extern Sifteo::AssetGroup IconAssets;
 extern const Sifteo::AssetImage Icon;
 extern Sifteo::AssetGroup GameAssets;
+extern const Sifteo::AssetImage Bradley;
+extern const Sifteo::AssetImage RoadView;
+extern const Sifteo::AssetImage MovementHighlight;
+extern const Sifteo::AssetImage Movement;
 extern const Sifteo::AssetImage BlackImage;
 extern const Sifteo::AssetImage Cyclist;
-extern const Sifteo::AssetImage RoadView;
-extern const Sifteo::AssetImage Bradley;
-extern const Sifteo::AssetImage Movement;
-extern const Sifteo::AssetImage MovementHighlight;

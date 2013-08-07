@@ -1,6 +1,6 @@
 #include "Controller.h"
 
-Controller::Controller(Model* model)
+Controller::Controller(Model* model, View* view)
 {
 	for(int i=0; i < CUBE_ALLOCATION; ++i)
 	{
@@ -32,7 +32,7 @@ Controller::Controller(Model* model)
     }
 
     myModel = model;
-	myView = View(myModel, cen, cyc, act);
+	myView = view;
 }
 
 Controller::Controller()
@@ -43,42 +43,47 @@ Controller::Controller()
 void Controller::onNeighbourAdd(unsigned int cube0Id, unsigned int side0,
 	unsigned int cube1Id, unsigned int side1)
 {
-	if(cube0Id == ROAD_VIEW && cube1Id == ROAD_VIEW)
+	if(cubeStates[cube0Id] == ROAD_VIEW && cubeStates[cube1Id] == ROAD_VIEW)
 	{
-		myView.roadNeighbourAdd(cube0Id, side0, cube1Id, side1);
+		//LOG("Road-road Neighbour add with cubes %d and %d\n",cube0Id, cube1Id);
+		myView->roadNeighbourAdd(cube0Id, side0, cube1Id, side1);
 	}
-	else if(cube0Id == ROAD_VIEW && cube1Id == CYCLIST)
+	else if(cubeStates[cube0Id] == ROAD_VIEW && cubeStates[cube1Id] == CYCLIST)
 	{
-		myView.cyclistRoadNeighbourAdd(cube0Id, side0, side1);
+		//LOG("Road-cyclist Neighbour add with cubes %d and %d\n",cube0Id, cube1Id);
+		myView->cyclistRoadNeighbourAdd(cube0Id, side0, side1);
 	}
-	else if(cube1Id == ROAD_VIEW && cube0Id == CYCLIST)
+	else if(cubeStates[cube1Id] == ROAD_VIEW && cubeStates[cube0Id] == CYCLIST)
 	{
-		myView.cyclistRoadNeighbourAdd(cube1Id, side1, side0);
+		//LOG("Road-cyclist Neighbour add with cubes %d and %d\n",cube1Id, cube0Id);
+		myView->cyclistRoadNeighbourAdd(cube1Id, side1, side0);
 	}
-	else if(cube0Id == ACTION && cube1Id == CYCLIST)
+	else if(cubeStates[cube0Id] == ACTION && cubeStates[cube1Id] == CYCLIST)
 	{
-		myView.cyclistActionNeighbourAdd(side0);
+		//LOG("Action-cyclist Neighbour add with cubes %d and %d\n",cube0Id, cube1Id);
+		myView->cyclistActionNeighbourAdd(side0);
 	}
-	else if(cube1Id == ACTION && cube0Id == CYCLIST)
+	else if(cubeStates[cube1Id] == ACTION && cubeStates[cube0Id] == CYCLIST)
 	{
-		myView.cyclistActionNeighbourAdd(side1);
+		//LOG("Action-cyclist Neighbour add with cubes %d and %d\n",cube1Id, cube0Id);
+		myView->cyclistActionNeighbourAdd(side1);
 	}
 }
 
 void Controller::onNeighbourRemove(unsigned int cube0Id, unsigned int side0,
 	unsigned int cube1Id, unsigned int side1)
 {
-	if(cube0Id == ROAD_VIEW && cube1Id == ROAD_VIEW)
+	if(cubeStates[cube0Id] == ROAD_VIEW && cubeStates[cube1Id] == ROAD_VIEW)
 	{
-		myView.roadNeighbourRemove(cube0Id, side0, cube1Id, side1);
+		myView->roadNeighbourRemove(cube0Id, side0, cube1Id, side1);
 	}
-	else if(cube0Id == ACTION && cube1Id == CYCLIST)
+	else if(cubeStates[cube0Id] == ACTION && cubeStates[cube1Id] == CYCLIST)
 	{
-		myView.cyclistActionNeighbourRemove(side0);
+		myView->cyclistActionNeighbourRemove(side0);
 	}
-	else if(cube1Id == ACTION && cube0Id == CYCLIST)
+	else if(cubeStates[cube1Id] == ACTION && cubeStates[cube0Id] == CYCLIST)
 	{
-		myView.cyclistActionNeighbourRemove(side1);
+		myView->cyclistActionNeighbourRemove(side1);
 	}
 }
 
@@ -100,4 +105,5 @@ void Controller::onDisconnect(unsigned int cube)
 void Controller::updateTime(TimeDelta delta)
 {
 	myModel->updateMove(delta);
+	myView->updateCyclist();
 }

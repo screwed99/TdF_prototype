@@ -17,7 +17,8 @@ static AssetLoader loader;
 static AssetConfiguration<1> assetConfig;
 
 Model model = Model();
-Controller controller = Controller(&model);
+View view = View(&model, 2, 0, 1);
+Controller controller = Controller(&model, &view);
 
 void onDisconnect(void *x, unsigned int id)
 {

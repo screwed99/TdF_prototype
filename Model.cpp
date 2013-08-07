@@ -33,6 +33,7 @@ void Model::updateMove(TimeDelta delta)
 
 void Model::userMove(int direction)
 {
+	LOG("direction = %d\n",direction);
 	Int2 attPosition;
 	switch(direction)
 	{
@@ -59,6 +60,23 @@ void Model::userMove(int direction)
 		default :
 			break;
 	}
+	if(attPosition.x < topLeftMap.x)
+	{
+		attPosition.x = topLeftMap.x;
+	}
+	if(attPosition.y < topLeftMap.y)
+	{
+		attPosition.y = topLeftMap.y;
+	}
+	if(attPosition.x > bottomRightMap.x)
+	{
+		attPosition.x = bottomRightMap.x;
+	}
+	if(attPosition.y > bottomRightMap.y)
+	{
+		attPosition.y = bottomRightMap.y;
+	}
+	futurePosition = attPosition;
 }
 
 Int2 Model::getPosition()

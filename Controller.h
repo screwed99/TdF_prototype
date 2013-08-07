@@ -20,10 +20,10 @@ private:
 	CubeState cubeStates[CUBE_ALLOCATION];
 
 	Model* myModel;
-	View myView;
+	View* myView;
 
 public:
-	Controller(Model* model);
+	Controller(Model* model, View* view);
 	Controller();
 
 	void onNeighbourAdd(unsigned int cube0Id, unsigned int side0,
