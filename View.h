@@ -40,7 +40,7 @@ public:
 
 private:
 	void findNewTopLefts(unsigned int roadID, Int2 topLeftImage);
-	void redrawRoad(unsigned int roadID, Int2 currPosition, Int2 currTopLeft);
+	void redrawRoad(Int2 currPosition, Int2 currTopLeft);
 	void drawCyclist(Int2 Position);
 	void drawSingleRoadCube(unsigned int roadID);
 

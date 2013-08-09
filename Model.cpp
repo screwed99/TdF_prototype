@@ -19,15 +19,19 @@ void Model::updateMove(TimeDelta delta)
 	Float2 movementVec = futurePosition - currPosition;
 	int movementLen = movementVec.len();
 
-	double maxMovement = PIXELS_PER_SECOND * (milliSecs / 1000.0);
+	if(movementLen != 0)
+	{
+		//LOG("Movement = %d\n",movementLen);
+		double maxMovement = PIXELS_PER_SECOND * (milliSecs / 1000.0);
 
-	if(maxMovement > movementLen)
-	{
-		currPosition = futurePosition;
-	}
-	else
-	{
-		currPosition = currPosition + (Int2) (movementVec.normalize() * maxMovement);
+		if(maxMovement > movementLen)
+		{
+			currPosition = futurePosition;
+		}
+		else
+		{
+			currPosition = currPosition + (Int2) (movementVec.normalize() * maxMovement);
+		}
 	}
 }
 
